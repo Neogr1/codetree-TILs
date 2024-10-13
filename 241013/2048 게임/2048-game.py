@@ -2,7 +2,7 @@ from copy import deepcopy
 
 def left(board):
     for r in range(n):
-        new = [0,0,0,0]
+        new = [0]*n
         pos = 0
         for c in range(n):
             if board[r][c] != 0:
@@ -20,7 +20,7 @@ def left(board):
 
 def right(board):
     for r in range(n):
-        new = [0,0,0,0]
+        new = [0]*n
         pos = n-1
         for c in range(n-1,-1,-1):
             if board[r][c] != 0:
@@ -37,7 +37,7 @@ def right(board):
 
 def up(board):
     for c in range(n):
-        new = [0,0,0,0]
+        new = [0]*n
         pos = 0
         for r in range(n):
             if board[r][c] != 0:
@@ -54,7 +54,7 @@ def up(board):
 
 def down(board):
     for c in range(n):
-        new = [0,0,0,0]
+        new = [0]*n
         pos = n-1
         for r in range(n-1,-1,-1):
             if board[r][c] != 0:
