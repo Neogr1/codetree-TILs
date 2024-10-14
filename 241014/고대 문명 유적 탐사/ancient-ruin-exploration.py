@@ -91,4 +91,4 @@ for _ in range(k):
     while (value := eval_value(mat)):
         total_value += value
         update_matrix(mat)
-    print(total_value)
+    print(total_value, end=' ')
