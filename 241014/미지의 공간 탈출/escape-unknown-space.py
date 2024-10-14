@@ -102,6 +102,9 @@ update_time_anomaly(dis)
 if not 0<=row<n>col>=0 or not board[row][col] in [0,4]:
     print(-1)
     exit(0)
+if board[row][col] == 4:
+    print(dis)
+    exit(0)
 
 check = [[0 for _ in range(n)] for _ in range(n)]
 check[row][col] = 1
@@ -125,11 +128,5 @@ while pos_list:
                 check[nr][nc] = 1
 
     pos_list = next_pos_list
-
-    # if dis > 0:
-    #     print(dis, pos_list)
-    #     for i in board:
-    #         print(*i)
-    #     print()
 
 print(-1)
