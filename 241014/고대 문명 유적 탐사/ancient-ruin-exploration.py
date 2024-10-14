@@ -36,10 +36,6 @@ def get_yumul_pos(mat):
     
     return yumul_pos
 
-
-def eval_value(mat) -> int:
-    return len(get_yumul_pos(mat))
-
 def find_best_rotation(mat):
     max_value = 0
     rr = cc = dd = None
@@ -47,7 +43,7 @@ def find_best_rotation(mat):
         for c in range(1, 4):
             for d in range(1, 4):
                 rotate(mat, r, c)
-                value = eval_value(mat)
+                value = len(get_yumul_pos(mat))
                 if value > max_value:
                     max_value = value
                     rr,cc,dd = r,c,d
@@ -68,6 +64,7 @@ def update_matrix(mat):
     for r,c in yumul_pos:
         mat[r][c] = no[no_index]
         no_index = (no_index + 1) % m
+    return len(yumul_pos)
 
 
 
@@ -88,7 +85,6 @@ for _ in range(k):
         rotate(mat, r, c)
 
     total_value = 0
-    while (value := eval_value(mat)):
+    while (value := update_matrix(mat)):
         total_value += value
-        update_matrix(mat)
     print(total_value, end=' ')
