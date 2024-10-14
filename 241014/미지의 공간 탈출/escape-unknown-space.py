@@ -85,17 +85,16 @@ for r,c,d,v in anomaly:
 for t in range(dis+1):
     update_time_anomaly(t)
 
-
 # 최종 탈출 + 시간 이상 업데이트
 tr,tc = find_pos(board, 3)
 if face == east:
-    row,col = tr+row,tc+m
+    row,col = tr+(m-col-1),tc+m
 elif face == west:
-    row,col = tr+row,tc-1
+    row,col = tr+col,tc-1
 elif face == south:
     row,col = tr+m,tc+col
 else:
-    row,col = tr-1,tc+col
+    row,col = tr-1,tc+(m-col-1)
 
 dis += 1
 update_time_anomaly(dis)
@@ -107,31 +106,30 @@ if not 0<=row<n>col>=0 or not board[row][col] in [0,4]:
 check = [[0 for _ in range(n)] for _ in range(n)]
 check[row][col] = 1
 pos_list = [(row,col)]
-
 while pos_list:
     dis += 1
     update_time_anomaly(dis)
 
-    # if dis > 20:
-    #     print(dis, pos_list)
-    #     for i in board:
-    #         print(*i)
-    #     print()
 
     next_pos_list = []
     for r,c in pos_list:
-        if board[r][c] == 4:
-            print(dis-1)
-            exit(0)
         
         for dr,dc in [(0,1),(1,0),(0,-1),(-1,0)]:
             nr = r+dr
             nc = c+dc
             if 0<=nr<n>nc>=0 and board[nr][nc] in [0,4] and not check[nr][nc]:
+                if board[nr][nc] == 4:
+                    print(dis)
+                    exit(0)
                 next_pos_list.append((nr,nc))
                 check[nr][nc] = 1
 
     pos_list = next_pos_list
 
+    # if dis > 0:
+    #     print(dis, pos_list)
+    #     for i in board:
+    #         print(*i)
+    #     print()
 
 print(-1)
