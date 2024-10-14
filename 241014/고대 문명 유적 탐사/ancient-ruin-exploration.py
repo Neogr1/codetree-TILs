@@ -78,15 +78,17 @@ mat = [list(map(int, input().split())) for _ in range(5)]
 no = list(map(int, input().split()))
 no_index = 0
 
-ans = 0
 for _ in range(k):
     r,c,d = find_best_rotation(mat)
+
     if r == c == d == None:
         break
+
     for _ in range(d):
         rotate(mat, r, c)
-    while (value := eval_value(mat)):
-        ans += value
-        update_matrix(mat)
 
-print(ans)
+    total_value = 0
+    while (value := eval_value(mat)):
+        total_value += value
+        update_matrix(mat)
+    print(total_value)
