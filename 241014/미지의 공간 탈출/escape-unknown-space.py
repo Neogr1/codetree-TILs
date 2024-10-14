@@ -1,7 +1,8 @@
 from collections import deque
 
-east,west,south,north,top = 0,1,2,3,4
+EAST,WEST,SOUTH,NORTH,TOP,BASE = 0,1,2,3,4,5
 DIR = [(0,1), (0,-1), (1,0), (-1,0)]
+ANOMALY = 9
 
 def find_pos(board, target):
     for i in range(len(board)):
@@ -15,118 +16,105 @@ board = [list(map(int, input().split())) for _ in range(n)]
 faces = [[list(map(int, input().split())) for _ in range(m)] for _ in range(5)]
 anomaly = [tuple(map(int, input().split())) for _ in range(f)]
 
-# 시간 벽 탈출 지점 찾기
-links = [[[[] for _ in range(m)] for _ in range(m)] for _ in range(5)]
+temp_r,temp_c = find_pos(board, 3)
+
+# 3차원 그래프화
+links = [[[[] for _ in range(m)] for _ in range(m)] for _ in range(5)] + [[[[] for _ in range(n)] for _ in range(n)]]
 for i in range(m):
-    links[top][0][i].append((north,0,m-i-1))
-    links[top][i][0].append((west,0,i))
-    links[top][m-1][i].append((south,0,i))
-    links[top][i][m-1].append((east,0,m-i-1))
+    links[TOP][0][i].append((NORTH,0,m-i-1))
+    links[TOP][i][0].append((WEST,0,i))
+    links[TOP][m-1][i].append((SOUTH,0,i))
+    links[TOP][i][m-1].append((EAST,0,m-i-1))
 
-    links[north][0][i].append((top,0,m-i-1))
-    links[west][0][i].append((top,i,0))
-    links[south][0][i].append((top,m-1,i))
-    links[east][0][i].append((top,m-i-1,m-1))
+    links[NORTH][0][i].append((TOP,0,m-i-1))
+    links[WEST][0][i].append((TOP,i,0))
+    links[SOUTH][0][i].append((TOP,m-1,i))
+    links[EAST][0][i].append((TOP,m-i-1,m-1))
 
-    links[north][i][0].append((east,i,m-1))
-    links[north][i][m-1].append((west,i,0))
-    links[west][i][0].append((north,i,m-1))
-    links[west][i][m-1].append((south,i,0))
-    links[south][i][0].append((west,i,m-1))
-    links[south][i][m-1].append((east,i,0))
-    links[east][i][0].append((south,i,m-1))
-    links[east][i][m-1].append((north,i,0))
+    links[NORTH][i][0].append((EAST,i,m-1))
+    links[NORTH][i][m-1].append((WEST,i,0))
+    links[WEST][i][0].append((NORTH,i,m-1))
+    links[WEST][i][m-1].append((SOUTH,i,0))
+    links[SOUTH][i][0].append((WEST,i,m-1))
+    links[SOUTH][i][m-1].append((EAST,i,0))
+    links[EAST][i][0].append((SOUTH,i,m-1))
+    links[EAST][i][m-1].append((NORTH,i,0))
 
-check = [[[False for _ in range(m)] for _ in range(m)] for _ in range(5)]
-sr,sc = find_pos(faces[top], 2)
-q = deque([(top,sr,sc,0)])
-while q:
-    face,r,c,dis = q.popleft()
-    if face != top and r == m-1:
-        break
-    
-    for dr,dc in [(0,1),(1,0),(0,-1),(-1,0)]:
-        nr = r+dr
-        nc = c+dc
-        if 0<=nr<m>nc>=0 and faces[face][nr][nc] == 0 and not check[face][nr][nc]:
-            check[face][nr][nc] = True
-            q.append((face,nr,nc,dis+1))
-    for nf,nr,nc in links[face][r][c]:
-        if faces[nf][nr][nc] == 0 and not check[nf][nr][nc]:
-            check[nf][nr][nc] = True
-            q.append((nf,nr,nc,dis+1))
+    if temp_r > 0:
+        links[NORTH][m-1][i].append((BASE,temp_r-1,temp_c+(m-i-1)))
+    if temp_c > 0:
+        links[WEST][m-1][i].append((BASE,temp_r+i,temp_c-1))
+    if temp_r+m < n:
+        links[SOUTH][m-1][i].append((BASE,temp_r+m,temp_c+i))
+    if temp_c+m < n:
+        links[EAST][m-1][i].append((BASE,temp_r+(m-i-1),temp_c+m))
 
-face,row,col,dis = face,r,c,dis
-        
+# 시간의 벽 그래프화
+for r in range(m):
+    for c in range(m):
+        for dr,dc in DIR:
+            nr = r+dr
+            nc = c+dc
+            if 0<=nr<m>nc>=0:
+                for f in range(5):
+                    links[f][r][c].append((f,nr,nc))
+
+# 미지의 공간 그래프화
+for r in range(n):
+    for c in range(n):
+        for dr,dc in DIR:
+            nr = r+dr
+            nc = c+dc
+            if 0<=nr<n>nc>=0:
+                links[BASE][r][c].append((BASE,nr,nc))
 
 
-# 시간 이상 업데이트
-def update_time_anomaly(t):
+
+def update_time_anomaly(time):
     for r in range(n):
         for c in range(n):
-            if ano_board[r][c] == None:
+            if anomaly_board[r][c] == None:
                 continue
-            d,v,trigger_time = ano_board[r][c]
-            if t == trigger_time:
-                ano_board[r][c] = None
+            d,v,trigger_time = anomaly_board[r][c]
+            if time == trigger_time:
+                anomaly_board[r][c] = None
 
                 dr,dc = DIR[d]
                 nr = r+dr
                 nc = c+dc
-                if 0 <= nr < n > nc >= 0 and board[nr][nc] in [0, 9]:
-                    ano_board[nr][nc] = (d,v,t+v)
-                    board[nr][nc] = 9
+                if 0 <= nr < n > nc >= 0 and board[nr][nc] in [0, ANOMALY]:
+                    anomaly_board[nr][nc] = (d,v,time+v)
+                    board[nr][nc] = ANOMALY
 
-ano_board = [[None for _ in range(n)] for _ in range(n)]
+
+# 시간 이상의 위치 방향 주기 확산시간을 기록하는 배열
+anomaly_board = [[None for _ in range(n)] for _ in range(n)]
 for r,c,d,v in anomaly:
-    ano_board[r][c] = (d,v,v)
-    board[r][c] = 9
+    anomaly_board[r][c] = (d,v,v)
+    board[r][c] = ANOMALY
 
-for t in range(dis+1):
-    update_time_anomaly(t)
+# 탐색
+faces += [board]
+check = [[[False for _ in range(m)] for _ in range(m)] for _ in range(5)] + [[[False for _ in range(n)] for _ in range(n)]]
+start_r,start_c = find_pos(faces[TOP], 2)
 
-# 최종 탈출 + 시간 이상 업데이트
-tr,tc = find_pos(board, 3)
-if face == east:
-    row,col = tr+(m-col-1),tc+m
-elif face == west:
-    row,col = tr+col,tc-1
-elif face == south:
-    row,col = tr+m,tc+col
-else:
-    row,col = tr-1,tc+(m-col-1)
+time = 1
+check[TOP][start_r][start_c] = True
+positions = [(TOP,start_r,start_c)]
+while positions:
+    update_time_anomaly(time)
 
-dis += 1
-update_time_anomaly(dis)
+    new_positions = []
+    for f,r,c in positions:
+        for nf,nr,nc in links[f][r][c]:
+            if faces[nf][nr][nc] == 4:
+                print(time)
+                exit(0)
+            if not check[nf][nr][nc] and faces[nf][nr][nc] == 0:
+                check[nf][nr][nc] = True
+                new_positions.append((nf,nr,nc))
 
-if not 0<=row<n>col>=0 or not board[row][col] in [0,4]:
-    print(-1)
-    exit(0)
-if board[row][col] == 4:
-    print(dis)
-    exit(0)
-
-check = [[0 for _ in range(n)] for _ in range(n)]
-check[row][col] = 1
-pos_list = [(row,col)]
-while pos_list:
-    dis += 1
-    update_time_anomaly(dis)
-
-
-    next_pos_list = []
-    for r,c in pos_list:
-        
-        for dr,dc in [(0,1),(1,0),(0,-1),(-1,0)]:
-            nr = r+dr
-            nc = c+dc
-            if 0<=nr<n>nc>=0 and board[nr][nc] in [0,4] and not check[nr][nc]:
-                if board[nr][nc] == 4:
-                    print(dis)
-                    exit(0)
-                next_pos_list.append((nr,nc))
-                check[nr][nc] = 1
-
-    pos_list = next_pos_list
+    positions = new_positions
+    time += 1
 
 print(-1)
