@@ -73,7 +73,7 @@ def update_time_anomaly(t):
                 dr,dc = DIR[d]
                 nr = r+dr
                 nc = c+dc
-                if 0 <= nr < n > nc >= 0 and board[nr][nc] in [0, 99]:
+                if 0 <= nr < n > nc >= 0 and board[nr][nc] in [0, 9]:
                     ano_board[nr][nc] = (d,v,t+v)
                     board[nr][nc] = 9
 
